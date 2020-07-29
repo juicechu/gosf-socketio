@@ -99,13 +99,17 @@ func (m *methods) processIncomingMessage(c *Channel, msg *protocol.Message) {
 			return
 		}
 
-		data := f.getArgs()
-		err := json.Unmarshal([]byte(msg.Args), &data)
-		if err != nil {
-			return
+		//string type pass raw message
+		if f.Args.Kind() == reflect.String {
+			f.callFunc(c, &msg.Args)
+		} else {
+			data := f.getArgs()
+			err := json.Unmarshal([]byte(msg.Args), &data)
+			if err != nil {
+				return
+			}
+			f.callFunc(c, data)
 		}
-
-		f.callFunc(c, data)
 
 	case protocol.MessageTypeAckRequest:
 		f, ok := m.findMethod(msg.Method)
@@ -115,14 +119,18 @@ func (m *methods) processIncomingMessage(c *Channel, msg *protocol.Message) {
 
 		var result []reflect.Value
 		if f.ArgsPresent {
-			//data type should be defined for unmarshall
-			data := f.getArgs()
-			err := json.Unmarshal([]byte(msg.Args), &data)
-			if err != nil {
-				return
+			//string type pass raw message
+			if f.Args.Kind() == reflect.String {
+				result = f.callFunc(c, &msg.Args)
+			} else {
+				//data type should be defined for unmarshall
+				data := f.getArgs()
+				err := json.Unmarshal([]byte(msg.Args), &data)
+				if err != nil {
+					return
+				}
+				result = f.callFunc(c, data)
 			}
-
-			result = f.callFunc(c, data)
 		} else {
 			result = f.callFunc(c, &struct{}{})
 		}
