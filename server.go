@@ -235,6 +235,7 @@ func (s *Server) BroadcastTo(room, method string, args interface{}) {
 	}
 
 	for cn := range roomChannels {
+		// Warning: IsAlive need aliveLock.Lock(), it could be deadlock
 		if cn.IsAlive() {
 			go cn.Emit(method, args)
 		}

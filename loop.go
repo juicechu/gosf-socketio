@@ -102,7 +102,7 @@ func closeChannel(c *Channel, m *methods, args ...interface{}) error {
 	}
 	c.out <- protocol.CloseMessage
 
-	m.callLoopEvent(c, OnDisconnection)
+	go m.callLoopEvent(c, OnDisconnection)
 
 	overfloodedLock.Lock()
 	delete(overflooded, c)
