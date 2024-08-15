@@ -26,12 +26,16 @@ func send(msg *protocol.Message, c *Channel, args interface{}) error {
 	}()
 
 	if args != nil {
-		json, err := json.Marshal(&args)
-		if err != nil {
-			return err
-		}
+		if str, ok := args.(string); ok {
+			msg.Args = str
+		} else {
+			json, err := json.Marshal(&args)
+			if err != nil {
+				return err
+			}
 
-		msg.Args = string(json)
+			msg.Args = string(json)
+		}
 	}
 
 	command, err := protocol.Encode(msg)
